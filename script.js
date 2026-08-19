@@ -119,6 +119,17 @@
         if (info) info.hidden = false;
     }
 
+    // Le QR est généré au format "| MATRICULE | NOM |" (pipe en tête et en fin).
+    // On découpe par "|", on retire les segments vides/espaces, et on garde le premier
+    // segment non vide restant — c'est le matricule, quel que soit le nombre de pipes.
+    function extraireMatricule(decodedText) {
+        var texte = (decodedText || '').toString();
+        var segments = texte.split('|')
+            .map(function (s) { return s.trim(); })
+            .filter(function (s) { return s !== ''; });
+        return segments.length ? segments[0] : texte.trim();
+    }
+
     function onScanSuccess(decodedText) {
         if (isBusy) return; // ignore les détections répétées pendant le traitement en cours
         isBusy = true;
@@ -126,7 +137,7 @@
         try { html5QrCode.pause(true); } catch (e) {}
         updateStatus('Scan détecté…');
 
-        var matricule = (decodedText || '').toString().split('|')[0].trim() || (decodedText || '').toString().trim();
+        var matricule = extraireMatricule(decodedText);
         traiterMatricule(matricule, reprendreScanApresDelai);
     }
 
